@@ -1,0 +1,13 @@
+diff --git a/node_modules/ton/dist/client/api/HttpApi.js b/node_modules/ton/dist/client/api/HttpApi.js
+index 04d0a41..c6c4f21 100644
+--- a/node_modules/ton/dist/client/api/HttpApi.js
++++ b/node_modules/ton/dist/client/api/HttpApi.js
+@@ -260,7 +260,7 @@ class HttpApi {
+     async doCall(method, body, codec) {
+         let headers = {
+             'Content-Type': 'application/json',
+-            'X-Ton-Client-Version': version,
++            // 'X-Ton-Client-Version': version,
+         };
+         if (this.parameters.apiKey) {
+             headers['X-API-Key'] = this.parameters.apiKey;

@@ -1,10 +1,25 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App'
-import './index.css'
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { AdaptivityProvider, ConfigProvider, AppRoot } from "@vkontakte/vkui";
+import { DeLabModal } from "@delab-team/connect";
+import App from "./App";
+import { Connector } from "./services";
+import { ConnectProvider } from "./contexts/Connect";
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+import "@vkontakte/vkui/dist/vkui.css";
+import "./index.css";
+
+ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <App />
+    <ConnectProvider>
+      <ConfigProvider scheme="vkcom_dark">
+        <AdaptivityProvider>
+          <AppRoot>
+            <App />
+            <DeLabModal DeLabConnectObject={Connector} scheme={"dark"} />
+          </AppRoot>
+        </AdaptivityProvider>
+      </ConfigProvider>
+    </ConnectProvider>
   </React.StrictMode>
-)
+);
