@@ -7,6 +7,9 @@ import { Connector } from "./services";
 import { ConnectProvider } from "./contexts/Connect";
 import { OrdersProvider } from "./contexts/Orders";
 
+import { Buffer } from "buffer";
+window.Buffer = Buffer;
+
 import "@vkontakte/vkui/dist/vkui.css";
 import "./index.css";
 
