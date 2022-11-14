@@ -7,3 +7,16 @@
   align-items: center;
   justify-content: center;
 }
+
+.row-split {
+  display: flex;
+  justify-content: space-between;
+}
+
+.delab-connect_wrap > button {
+  background-color: #e1e3e6 !important;
+}
+
+.delab-connect_wrap > button::hovet {
+  filter: brightness(0.8);
+}

@@ -1,7 +1,7 @@
 import { BN } from "bn.js";
 import { Address, Builder, Cell, contractAddress, StateInit, toNano } from "ton";
 import { Client } from "../services";
-import { parseInfoStack } from "./parsers";
+import { parseEscrowDataCell, parseInfoStack } from "./parsers";
 import { DynamicEscrowData, EscrowData, InputsData, EscrowDeployBody } from "./types";
 
 export enum OpCodes {
@@ -102,6 +102,14 @@ export class Escrow {
 
   static createGetInfoBody(queryId: number = 0) {
     return new Builder().storeUint(OpCodes.get_info_onchain, 32).storeUint(queryId, 64).endCell();
+  }
+
+  static createFromRaw(dataBoc: string) {
+    const dataCell = Cell.fromBoc(Buffer.from(dataBoc, "base64"))[0];
+    const _data = parseEscrowDataCell(dataCell);
+    const data = { ..._data, guarantorRoyalty: undefined, fullPrice: undefined };
+
+    return new Escrow(data);
   }
 
   static createTopUpBody() {

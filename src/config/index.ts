@@ -4,3 +4,8 @@ export const AppConfig = {
   name: "TON Escrow",
   network: "testnet",
 };
+
+export const Fees = {
+  royaltyPercent: 0.05,
+  gasFee: 0.05,
+};

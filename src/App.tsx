@@ -1,19 +1,23 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { SplitLayout, PanelHeader, useAdaptivity, SplitCol, ViewWidth } from "@vkontakte/vkui";
 import { useConnect } from "./hooks/useConnect";
 import { Form } from "./components/Form";
 import { InputsData } from "./contracts/types";
 import { Escrow } from "./contracts/Escrow";
-import { OrderItem } from "./components/OrderItem";
 import { Wallet } from "./components/Wallet";
 import { toNano } from "ton";
-import BN from "bn.js";
 import { OrdersGrid } from "./components/OrdersGrid";
+import { ModalRef, Modals } from "./components/Modals/Modals";
+import { tonDeepLink } from "./utils";
+import { Fees } from "./config";
+import { useOrders } from "./hooks/useOrders";
 
 function App() {
   const [loading, setLoading] = useState(false);
   const [smc, setSmc] = useState<Escrow | null>(null);
   const { isConnected, address, connector } = useConnect();
+  const modalRef = useRef<ModalRef>(null);
+  const { addOrder } = useOrders();
 
   const { viewWidth } = useAdaptivity();
   const desktop = viewWidth > ViewWidth.SMALL_TABLET;
@@ -38,32 +42,12 @@ function App() {
     let contract: Escrow;
     try {
       contract = await Escrow.checkAndCrete(data);
-
-      console.log("data", data);
-
       if (contract.deployed) {
-        setSmc(contract);
-        console.log("Ok, deployed!");
+        addOrder(contract);
         // Ok
       } else if (inputs.role === "buyer") {
         // Contract is not deployed; deploy if role == buyer
-        const fullPrice = toNano(0.5);
-        const guarantorRoyalty = fullPrice.div(new BN(20));
-
-        console.log("fullPrice", fullPrice.toString(10));
-        console.log("guarantorRoyalty", guarantorRoyalty.toString(10));
-
-        const value = fullPrice.add(toNano(0.05)).toString(10);
-
-        const _ = await connector.sendTransaction({
-          value,
-          to: contract.address.toFriendly(),
-          payload: Escrow.createDeployBody({ fullPrice, guarantorRoyalty })
-            .toBoc({ idx: false })
-            .toString("base64"),
-          stateInit: contract.stateInit.toBoc({ idx: false }).toString("base64"),
-        });
-        console.log("Ok, deploy");
+        modalRef.current?.createEscrow(contract);
       } else {
       }
     } catch (e) {
@@ -85,36 +69,52 @@ function App() {
   }
 
   const onAccept = async (contract: Escrow) => {
-    connector.sendTransaction({
-      value: toNano(0.05).toString(10),
+    const value = toNano(Fees.gasFee);
+    const body = Escrow.createAcceptBody();
+    const res = await connector.sendTransaction({
+      value: value.toString(10),
       to: contract.address.toFriendly(),
-      payload: Escrow.createAcceptBody().toBoc({ idx: false }).toString("base64"),
+      payload: body.toBoc({ idx: false }).toString("base64"),
     });
+
+    if (connector.typeConnect === "tonkeeper") {
+      const anyLink = tonDeepLink(contract.address, value, body, contract.stateInit);
+      modalRef.current?.confirm({ tonkeeper: res, any: anyLink });
+    }
   };
 
   const onDecline = async (contract: Escrow) => {
-    connector.sendTransaction({
-      value: toNano(0.05).toString(10),
+    const value = toNano(Fees.gasFee);
+    const body = Escrow.createRejectBody();
+    const res = await connector.sendTransaction({
+      value: value.toString(10),
       to: contract.address.toFriendly(),
-      payload: Escrow.createRejectBody().toBoc({ idx: false }).toString("base64"),
+      payload: body.toBoc({ idx: false }).toString("base64"),
     });
+
+    if (connector.typeConnect === "tonkeeper") {
+      const anyLink = tonDeepLink(contract.address, value, body, contract.stateInit);
+      modalRef.current?.confirm({ tonkeeper: res, any: anyLink });
+    }
   };
 
   return (
     <main>
       <PanelHeader className="testnet">🛠 Dapp works in Testnet only</PanelHeader>
       {!desktop && <Wallet />}
-      <SplitLayout>
-        <SplitCol width={30} spaced={mobile}>
-          {isConnected && <Form onSubmit={onSubmit} loading={loading} />}
-        </SplitCol>
+      <SplitLayout modal={<Modals ref={modalRef} />}>
+        {isConnected && (
+          <SplitCol width={30} spaced={mobile}>
+            <Form onSubmit={onSubmit} loading={loading} />
+          </SplitCol>
+        )}
         {desktop && (
           <SplitCol spaced>
             <Wallet />
           </SplitCol>
         )}
       </SplitLayout>
-      {smc && <OrdersGrid contracts={[smc]} onAccept={onAccept} onDecline={onDecline} />}
+      <OrdersGrid onAccept={onAccept} onDecline={onDecline} />
     </main>
   );
 }

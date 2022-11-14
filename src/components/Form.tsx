@@ -32,8 +32,16 @@ export function Form({ onSubmit, loading }: Props) {
 
   const handleSubmit = () => onSubmit({ ...inputs, role: option });
 
+  const isBuyer = option === "buyer";
+
   return (
-    <Group header={<Header>Escrow panel</Header>}>
+    <Group
+      description={
+        isBuyer &&
+        "If no deals will not be found, you will be asked to create a new one with selected amount of TON coins."
+      }
+      header={<Header>Escrow panel</Header>}
+    >
       <FormItem top="Choose a role">
         <SegmentedControl
           size="l"
@@ -68,7 +76,7 @@ export function Form({ onSubmit, loading }: Props) {
 
         <FormItem>
           <Button loading={loading} onClick={handleSubmit} size="l" stretched>
-            {option !== "buyer" ? "Search" : "Search or create"}
+            {isBuyer ? "Search or create" : "Search"}
           </Button>
         </FormItem>
       </FormItem>
