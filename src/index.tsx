@@ -19,8 +19,8 @@ root.render(
           <AdaptivityProvider>
             <AppRoot>
               <App />
-              <DeLabModal DeLabConnectObject={Connector} scheme={"dark"} />
             </AppRoot>
+            <DeLabModal DeLabConnectObject={Connector} scheme={"dark"} />
           </AdaptivityProvider>
         </ConfigProvider>
       </OrdersProvider>

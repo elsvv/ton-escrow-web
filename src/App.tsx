@@ -1,5 +1,14 @@
-import { useRef, useState } from "react";
-import { SplitLayout, PanelHeader, useAdaptivity, SplitCol, ViewWidth } from "@vkontakte/vkui";
+import React, { useRef, useState } from "react";
+import {
+  SplitLayout,
+  PanelHeader,
+  useAdaptivity,
+  SplitCol,
+  ViewWidth,
+  Snackbar,
+  Avatar,
+} from "@vkontakte/vkui";
+import { Icon16ErrorCircleFill } from "@vkontakte/icons";
 import { useConnect } from "./hooks/useConnect";
 import { Form } from "./components/Form";
 import { InputsData } from "./contracts/types";
@@ -16,11 +25,28 @@ function App() {
   const [loading, setLoading] = useState(false);
   const { isConnected, address, connector } = useConnect();
   const modalRef = useRef<ModalRef>(null);
+  const [snackbar, setSnackbar] = useState<React.ReactNode>(null);
   const { addOrder } = useOrders();
 
   const { viewWidth } = useAdaptivity();
   const desktop = viewWidth > ViewWidth.SMALL_TABLET;
   const mobile = viewWidth > ViewWidth.MOBILE;
+
+  const openDark = (text: string) => {
+    if (snackbar) return;
+    setSnackbar(
+      <Snackbar
+        mode="dark"
+        onClose={() => setSnackbar(null)}
+        children={text}
+        before={
+          <Avatar size={24} style={{ backgroundColor: "tomato" }}>
+            <Icon16ErrorCircleFill fill="#fff" />
+          </Avatar>
+        }
+      />
+    );
+  };
 
   async function onSubmit(inputs: InputsData) {
     setLoading(true);
@@ -43,7 +69,6 @@ function App() {
       contract = await Escrow.checkAndCrete(data);
       if (contract.deployed) {
         addOrder(contract);
-        // Ok
       } else if (inputs.role === "buyer") {
         // Contract is not deployed; deploy if role == buyer
         modalRef.current?.createEscrow(contract);
@@ -52,15 +77,12 @@ function App() {
     } catch (e) {
       if (typeof e === "object" && Object.hasOwn(e!, "cause")) {
         // @ts-ignore
-        switch (e.cause) {
-          case "serailization":
-            console.log("Serailization error");
-            // Error in form data
-            break;
-          default:
-            // Unknown Error
-            break;
+        if (e.cause === "serailization") {
+          console.log("Serailization error");
+          openDark("Invalid form data. Check the addresses or order id you entered");
         }
+      } else {
+        openDark("Unknown error...");
       }
     } finally {
       setLoading(false);
@@ -114,6 +136,7 @@ function App() {
         )}
       </SplitLayout>
       <OrdersGrid onAccept={onAccept} onDecline={onDecline} />
+      {snackbar}
     </main>
   );
 }
