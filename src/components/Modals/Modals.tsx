@@ -11,6 +11,8 @@ import {
   ViewWidth,
   PanelHeaderClose,
   ButtonGroup,
+  SimpleCell,
+  InfoRow,
 } from "@vkontakte/vkui";
 import BN from "bn.js";
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
@@ -122,6 +124,9 @@ export const Modals = forwardRef<ModalRef>((_, modalRef) => {
     window.open(link, "_blank");
   };
 
+  const displayRoyalty = (parseFloat(fullPriceValue) / 100) * Fees.royaltyPercent;
+  const totalSpend = parseFloat(fullPriceValue) + Fees.gasFee;
+
   return (
     <ModalRoot activeModal={activeModal} onClose={modalBack}>
       <ModalPage
@@ -141,13 +146,15 @@ export const Modals = forwardRef<ModalRef>((_, modalRef) => {
             onChange={(e) => setFullPriceValue(e.target.value)}
           />
         </FormItem>
-        <FormItem top="Guarantor Royalties in toncoins (included)">
+        <FormItem top={`Guarantor Royalties, ${Fees.royaltyPercent}% of 💎 (included)`}>
           <Input
-            type="number"
-            placeholder="Enter order id"
+            placeholder="Royalty"
             disabled
-            value={((parseFloat(fullPriceValue) / 100) * Fees.royaltyPercent).toFixed(9)}
+            value={isNaN(displayRoyalty) ? "" : displayRoyalty}
           />
+        </FormItem>
+        <FormItem top="To spend (including fees)">
+          <Input disabled value={isNaN(totalSpend) ? "0" : totalSpend} />
         </FormItem>
 
         <FormItem>
@@ -187,17 +194,11 @@ export const Modals = forwardRef<ModalRef>((_, modalRef) => {
             )}
             {links?.any && (
               <Button mode="secondary" onClick={() => openLink(links?.any)} size="l" stretched>
-                Open with any TON-app
+                Open with any TON wallet app
               </Button>
             )}
           </ButtonGroup>
         </Div>
-
-        {/* <FormItem>
-          <Button onClick={openLink} size="l" stretched>
-            Open Tonkeeper
-          </Button>
-        </FormItem> */}
       </ModalPage>
     </ModalRoot>
   );
