@@ -31,8 +31,12 @@ export function OrderItem({ contract, onAccept, onDecline, removeOrder }: Props)
   const [balance, setBalance] = useState<BN | null>(null);
 
   const getInfo = async () => {
-    const info = await contract.getInfo();
-    setData(info!);
+    try {
+      const info = await contract.getInfo();
+      setData(info ?? null);
+    } catch (_) {
+      setData(null);
+    }
   };
 
   useEffect(() => {
@@ -44,24 +48,12 @@ export function OrderItem({ contract, onAccept, onDecline, removeOrder }: Props)
     }
 
     fetch();
-    // Promise.all([contract.getInfo(), contract.getBalance()]).then(([info, _balance]) => {
-    //   setData(info!);
-    //   setBalance(_balance);
-    // });
   }, []);
 
-  if (data === null) {
-    return (
-      <Card style={{ minHeight: 300 }}>
-        <PanelSpinner size="large" />
-      </Card>
-    );
-  }
-
-  const isGuarantor = address === showAddr(data.guarantorAddress);
+  const isGuarantor = data && address === showAddr(data.guarantorAddress);
 
   return (
-    <Card>
+    <Card style={{ minHeight: 500 }}>
       <Div className="row-split">
         <Header mode="tertiary">Escrow order</Header>
         <div className="row-split">
@@ -73,47 +65,55 @@ export function OrderItem({ contract, onAccept, onDecline, removeOrder }: Props)
           </IconButton>
         </div>
       </Div>
-      <SimpleCell>
-        <InfoRow header="Contact address">{showAddr(contract.address)}</InfoRow>
-      </SimpleCell>
-      {balance && (
-        <SimpleCell>
-          <InfoRow header="Contract balance">{fromNano(balance)}</InfoRow>
-        </SimpleCell>
-      )}
-      <SimpleCell>
-        <InfoRow header="Order id">{data.orderId as number}</InfoRow>
-      </SimpleCell>
-      <SimpleCell multiline>
-        <InfoRow header="Initialized">{data.inited ? "Yes" : "No"}</InfoRow>
-      </SimpleCell>
-      <SimpleCell multiline>
-        <InfoRow header="Buyer address">{showAddr(data.buyerAddress)}</InfoRow>
-      </SimpleCell>
-      <SimpleCell multiline>
-        <InfoRow header="Seller address">{showAddr(data.sellerAddress)}</InfoRow>
-      </SimpleCell>
-      <SimpleCell multiline>
-        <InfoRow header="Guarantor address">{showAddr(data.guarantorAddress)}</InfoRow>
-      </SimpleCell>
-      <SimpleCell>
-        <InfoRow header="Full price">{fromNano(data.fullPrice)}</InfoRow>
-      </SimpleCell>
-      <SimpleCell>
-        <InfoRow header="Royalty (included)">{fromNano(data.guarantorRoyalty)}</InfoRow>
-      </SimpleCell>
+      {data ? (
+        <>
+          <SimpleCell>
+            <InfoRow header="Contact address">{showAddr(contract.address)}</InfoRow>
+          </SimpleCell>
+          {balance && (
+            <SimpleCell>
+              <InfoRow header="Contract balance">{fromNano(balance)}</InfoRow>
+            </SimpleCell>
+          )}
+          <SimpleCell>
+            <InfoRow header="Order id">{data.orderId as number}</InfoRow>
+          </SimpleCell>
+          <SimpleCell multiline>
+            <InfoRow header="Initialized">{data.inited ? "Yes" : "No"}</InfoRow>
+          </SimpleCell>
+          <SimpleCell multiline>
+            <InfoRow header="Buyer address">{showAddr(data.buyerAddress)}</InfoRow>
+          </SimpleCell>
+          <SimpleCell multiline>
+            <InfoRow header="Seller address">{showAddr(data.sellerAddress)}</InfoRow>
+          </SimpleCell>
+          <SimpleCell multiline>
+            <InfoRow header="Guarantor address">{showAddr(data.guarantorAddress)}</InfoRow>
+          </SimpleCell>
+          <SimpleCell>
+            <InfoRow header="Full price">{fromNano(data.fullPrice)} 💎</InfoRow>
+          </SimpleCell>
+          <SimpleCell>
+            <InfoRow header="Royalty (included)">{fromNano(data.guarantorRoyalty)} 💎</InfoRow>
+          </SimpleCell>
 
-      {isGuarantor && (
-        <Div>
-          <ButtonGroup mode="horizontal" gap="m" stretched>
-            <Button onClick={() => onAccept(contract)} size="l" appearance="positive">
-              Accept
-            </Button>
-            <Button onClick={() => onDecline(contract)} size="l" appearance="negative">
-              Decline
-            </Button>
-          </ButtonGroup>
-        </Div>
+          {isGuarantor && (
+            <Div>
+              <ButtonGroup mode="horizontal" gap="m" stretched>
+                <Button onClick={() => onAccept(contract)} size="l" appearance="positive">
+                  Accept
+                </Button>
+                <Button onClick={() => onDecline(contract)} size="l" appearance="negative">
+                  Decline
+                </Button>
+              </ButtonGroup>
+            </Div>
+          )}
+        </>
+      ) : (
+        <>
+          <PanelSpinner size="large" />
+        </>
       )}
     </Card>
   );

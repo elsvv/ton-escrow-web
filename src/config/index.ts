@@ -6,6 +6,6 @@ export const AppConfig = {
 };
 
 export const Fees = {
-  royaltyPercent: 0.05,
-  gasFee: 0.05,
+  royaltyPercent: 5,
+  gasFee: 0.02,
 };

@@ -15,8 +15,8 @@ import {
 import BN from "bn.js";
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { QRCode } from "react-qrcode-logo";
-
 import { toNano } from "ton";
+
 import { Fees } from "../../config";
 import { Escrow } from "../../contracts/Escrow";
 import { useConnect } from "../../hooks/useConnect";
@@ -94,7 +94,10 @@ export const Modals = forwardRef<ModalRef>((_, modalRef) => {
     const contract = contractRef.current;
 
     const fullPrice = toNano(fullPriceValue);
-    const guarantorRoyalty = fullPrice.mul(new BN(Fees.royaltyPercent));
+    const guarantorRoyalty = fullPrice.mul(new BN(Fees.royaltyPercent)).div(new BN(100));
+
+    console.log("fullPrice", fullPrice.toString(10));
+    console.log("guarantorRoyalty", guarantorRoyalty.toString(10));
 
     const value = fullPrice.add(toNano(Fees.gasFee));
     const body = Escrow.createDeployBody({ fullPrice, guarantorRoyalty });
@@ -143,7 +146,7 @@ export const Modals = forwardRef<ModalRef>((_, modalRef) => {
             type="number"
             placeholder="Enter order id"
             disabled
-            value={(parseFloat(fullPriceValue) * Fees.royaltyPercent).toFixed(9)}
+            value={((parseFloat(fullPriceValue) / 100) * Fees.royaltyPercent).toFixed(9)}
           />
         </FormItem>
 

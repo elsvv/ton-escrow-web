@@ -45,7 +45,6 @@ export function OrdersProvider({ children }: Props) {
   );
 
   useEffect(() => {
-    console.log("orders", orders);
     persistOrders(orders);
   }, [orders]);
 
