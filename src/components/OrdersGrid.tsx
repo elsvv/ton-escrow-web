@@ -14,6 +14,10 @@ export function OrdersGrid({ onAccept, onDecline }: Props) {
   const { viewWidth } = useAdaptivity();
   const mobile = viewWidth > ViewWidth.MOBILE;
 
+  if (!orders.length) {
+    return null;
+  }
+
   return (
     <Group>
       <CardGrid size={mobile ? "s" : "l"}>

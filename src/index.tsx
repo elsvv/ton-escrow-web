@@ -7,13 +7,11 @@ import { Connector } from "./services";
 import { ConnectProvider } from "./contexts/Connect";
 import { OrdersProvider } from "./contexts/Orders";
 
-import { Buffer } from "buffer";
-window.Buffer = Buffer;
-
 import "@vkontakte/vkui/dist/vkui.css";
 import "./index.css";
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement);
+root.render(
   <React.StrictMode>
     <ConnectProvider>
       <OrdersProvider>
