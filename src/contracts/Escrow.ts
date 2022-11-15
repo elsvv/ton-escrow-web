@@ -25,8 +25,8 @@ export enum ErrorCodes {
 }
 
 export const codeBoc =
-  "te6ccgECDgEAAWwAART/APSkE/S88sgLAQIBIAIDAgFIBAUABPIwBPLQAdDTAwFxsPJA2zwG+kAGjy80NDY2JccF8uH1AvoA+gAwAts8MFjbPBRDMHHIywBQBfoCUAPPFgHPFss/zMntVOExBtMfMCDACo4oEEVfBWwi0z8w7USAC3GAEMjLBVAFzxZw+gIUy2oTyx/LP8zJgED7AOA0I8ABDA0GBwIVoUvDtnm2eCBIIEcMDQAQyFjPFgH6AskCLJJfCOAjwALjAjI2AcAD4wJfBYQP8vAICQRmMzUC2zxRQccF8uH2IoIJMS0AoBa58tH3URKhgBZx2zwgjoYSgBRx2zySMDHicIAVgQCgDQsLCgRQAds8MFEixwXy4fYCggkxLQC+8uH3cIAegEDbPHGAICHbPHCAH4EAoA0LCwoBBNs8CwAwcIAQyMsFUAXPFlAD+gITy2oSyx/JAfsAAB7tRNDTAPoA+kD6QNM/1DAADND6QPoAMA==";
-export const codeCell = Cell.fromBoc(Buffer.from(codeBoc, "base64"))[0];
+  "te6ccgECDgEAAWsAART/APSkE/S88sgLAQIBIAIDAgFIBAUABPIwBPLQAdDTAwFxsPJA2zwG+kAwBY8vMzY2URXHBfLh9QL6APoAMALbPDBY2zwUQzBxyMsAUAX6AlADzxYBzxbLP8zJ7VThMAXTHyHACo4oNV8DbCIy0z8w7USAC3CAEMjLBVAFzxYk+gIUy2oTyx/LP8zJgED7AOAwIMABDA0GBwIVoUvDtnm2eCBIIEcMDQAQyFjPFgH6AskCKpJfCOAgwALjAjI2wAPjAl8FhA/y8AgJBGYwNQLbPFEhxwXy4fYiggkxLQCgFrny0fdmoRKAFnHbPCCOhhKAFHHbPJIwMeJwgBWBAKANCwsKBFAB2zwwZscF8uH2AoIJMS0AvvLh9wFwgB6AQNs8cYAgIds8cIAfgQCgDQsLCgEE2zwLADBwgBDIywVQBc8WUAP6AhPLahLLH8kB+wAAHu1E0NMA+gD6QPpA0z/UMAAM0PpA+gAw";
+const codeCell = Cell.fromBoc(Buffer.from(codeBoc, "base64"))[0];
 
 function buildEscrowDataCell(params: EscrowData) {
   const guarantorData = new Builder()
@@ -47,8 +47,9 @@ export class Escrow {
   public readonly address: Address;
   public readonly stateInit: Cell;
   public readonly dataCell: Cell;
-  public readonly codeCell: Cell = codeCell;
   public deployed = false;
+
+  static readonly codeCell: Cell = codeCell;
 
   constructor(data: DynamicEscrowData) {
     const dataCell = buildEscrowDataCell({
@@ -58,7 +59,7 @@ export class Escrow {
     });
 
     const _stateInit = new StateInit({
-      code: codeCell,
+      code: Escrow.codeCell,
       data: dataCell,
     });
     const stateInit = new Cell();
@@ -66,7 +67,7 @@ export class Escrow {
 
     this.address = contractAddress({
       workchain: 0,
-      initialCode: codeCell,
+      initialCode: Escrow.codeCell,
       initialData: dataCell,
     });
     this.stateInit = stateInit;
