@@ -67,7 +67,3 @@ export function Wallet() {
     </Group>
   );
 }
-
-{
-  /* <DeLabButton DeLabConnectObject={connector} scheme={"dark"} /> */
-}

@@ -14,7 +14,6 @@ import { useOrders } from "./hooks/useOrders";
 
 function App() {
   const [loading, setLoading] = useState(false);
-  const [smc, setSmc] = useState<Escrow | null>(null);
   const { isConnected, address, connector } = useConnect();
   const modalRef = useRef<ModalRef>(null);
   const { addOrder } = useOrders();
