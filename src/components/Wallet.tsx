@@ -46,11 +46,8 @@ export function Wallet() {
         </Div>
       )}
       {!isConnected && (
-        <Div>
-          <Text weight="3">
-            To use this dapp please connect to a wallet app. With DeLab-Connect you can easily use
-            any wallet You like: Tonkeeper, Tonhub, TonWallet etc.
-          </Text>
+        <Div className="center-children col">
+          <Text weight="3">To use this dapp please connect to a wallet app.</Text>
           <Spacing size={20} />
           <Text weight="3">
             With DeLab-Connect you can easily use any wallet You like: Tonkeeper, Tonhub, TonWallet

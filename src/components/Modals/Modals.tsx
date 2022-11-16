@@ -146,14 +146,14 @@ export const Modals = forwardRef<ModalRef>((_, modalRef) => {
             onChange={(e) => setFullPriceValue(e.target.value)}
           />
         </FormItem>
-        <FormItem top={`Guarantor Royalties, ${Fees.royaltyPercent}% of 💎 (included)`}>
+        <FormItem top={`Guarantor Royalties, ${Fees.royaltyPercent}% of 💎 (included):`}>
           <Input
             placeholder="Royalty"
             disabled
             value={isNaN(displayRoyalty) ? "" : displayRoyalty}
           />
         </FormItem>
-        <FormItem top="To spend (including fees)">
+        <FormItem top={`To spend (including ${Fees.gasFee} 💎 fees):`}>
           <Input disabled value={isNaN(totalSpend) ? "0" : totalSpend} />
         </FormItem>
 

@@ -15,7 +15,7 @@ root.render(
   <React.StrictMode>
     <ConnectProvider>
       <OrdersProvider>
-        <ConfigProvider scheme="vkcom_dark">
+        <ConfigProvider platform="android" locale="en" scheme="vkcom_dark">
           <AdaptivityProvider>
             <AppRoot>
               <App />
