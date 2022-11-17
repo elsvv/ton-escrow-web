@@ -20,6 +20,7 @@ import { toNano } from "ton";
 
 import { Fees } from "../../config";
 import { Escrow } from "../../contracts/Escrow";
+import { useConnect } from "../../hooks/useConnect";
 import { useOrders } from "../../hooks/useOrders";
 import { useSendTxn } from "../../hooks/useSendTxn";
 import { openLink, sleep } from "../../utils";
@@ -41,8 +42,9 @@ export const Modals = forwardRef<ModalRef>((_, modalRef) => {
   const [fullPriceValue, setFullPriceValue] = useState("");
   const [link, setLink] = useState<string | null>(null);
   const contractRef = useRef<Escrow | null>(null);
-  const { sendTxn, isIssuedTxn, txnState } = useSendTxn();
+  const { sendTxn, isIssuedTxn } = useSendTxn();
   const { addOrder } = useOrders();
+  const { connector } = useConnect();
 
   const isMobile = viewWidth <= ViewWidth.MOBILE;
 
@@ -112,6 +114,7 @@ export const Modals = forwardRef<ModalRef>((_, modalRef) => {
 
   const displayRoyalty = (parseFloat(fullPriceValue) / 100) * Fees.royaltyPercent;
   const totalSpend = parseFloat(fullPriceValue) + Fees.gasFee;
+  const notTonkeeperLoading = connector.typeConnect !== "tonkeeper" && isIssuedTxn;
 
   return (
     <ModalRoot activeModal={activeModal} onClose={modalBack}>
@@ -144,7 +147,7 @@ export const Modals = forwardRef<ModalRef>((_, modalRef) => {
         </FormItem>
 
         <FormItem>
-          <Button onClick={handleDeploy} size="l" stretched>
+          <Button loading={notTonkeeperLoading} onClick={handleDeploy} size="l" stretched>
             Deploy
           </Button>
         </FormItem>

@@ -17,18 +17,18 @@ import { Wallet } from "./components/Wallet";
 import { toNano } from "ton";
 import { OrdersGrid } from "./components/OrdersGrid";
 import { ModalRef, Modals } from "./components/Modals/Modals";
-import { sleep, toUrlSafe } from "./utils";
 import { Fees } from "./config";
 import { useOrders } from "./hooks/useOrders";
 import { useSendTxn } from "./hooks/useSendTxn";
+import { Client } from "./services";
 
 function App() {
   const [loading, setLoading] = useState(false);
-  const { isConnected, address } = useConnect();
+  const { isConnected, address, connector } = useConnect();
   const modalRef = useRef<ModalRef>(null);
   const [snackbar, setSnackbar] = useState<React.ReactNode>(null);
   const { addOrder, removeOrder } = useOrders();
-  const { sendTxn, isIssuedTxn, txnState } = useSendTxn();
+  const { sendTxn } = useSendTxn();
 
   const { viewWidth } = useAdaptivity();
   const desktop = viewWidth > ViewWidth.SMALL_TABLET;
@@ -72,7 +72,6 @@ function App() {
       if (contract.deployed) {
         addOrder(contract);
       } else if (inputs.role === "buyer") {
-        // Contract is not deployed; deploy if role == buyer
         modalRef.current?.createEscrow(contract);
       } else {
       }
@@ -90,22 +89,28 @@ function App() {
     }
   }
 
+  const checkDestroyContact = async (contract: Escrow) => {
+    const res = await Client.isContractDeployed(contract.address);
+    if (!res) {
+      removeOrder(contract);
+    }
+  };
+
   const onAccept = async (contract: Escrow) => {
     const value = toNano(Fees.gasFee);
     const body = Escrow.createAcceptBody();
 
-    const ok = await sendTxn({
+    await sendTxn({
       value,
       body,
       address: contract.address,
       onDeeplink: (link) => {
         modalRef.current?.confirm(link);
       },
+      pullCount: 2,
     });
-    await sleep(1000);
-
-    if (ok) {
-      // update
+    if (connector.typeConnect !== "tonkeeper") {
+      await checkDestroyContact(contract);
     }
   };
 
@@ -113,18 +118,17 @@ function App() {
     const value = toNano(Fees.gasFee);
     const body = Escrow.createRejectBody();
 
-    const ok = await sendTxn({
+    await sendTxn({
       value,
       body,
       address: contract.address,
       onDeeplink: (link) => {
         modalRef.current?.confirm(link);
       },
+      pullCount: 2,
     });
-    await sleep(1000);
-
-    if (ok) {
-      removeOrder(contract);
+    if (connector.typeConnect !== "tonkeeper") {
+      await checkDestroyContact(contract);
     }
   };
 

@@ -16,6 +16,8 @@ type SendTxnParams = {
   body: Cell;
   stateInit?: Cell;
   onDeeplink?: (link: string) => void;
+  pullInterval?: number;
+  pullCount?: number;
 };
 
 export function useSendTxn() {
@@ -25,7 +27,15 @@ export function useSendTxn() {
   const markTxnEnded = () => setTxnState("idle");
 
   const sendTxn = useCallback(
-    async ({ value, body, stateInit, onDeeplink, address }: SendTxnParams) => {
+    async ({
+      value,
+      body,
+      stateInit,
+      onDeeplink,
+      address,
+      pullInterval = 6000,
+      pullCount = 5,
+    }: SendTxnParams) => {
       markTxnEnded();
       const isTonkeeper = connector.typeConnect === "tonkeeper";
       const payloadEncoded = body.toBoc().toString("base64");
@@ -51,14 +61,14 @@ export function useSendTxn() {
         setTxnState("pending");
 
         let now = Date.now();
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < pullCount; i++) {
           let txns = await Client.getTransactions(address, { limit: 5 });
           let hasTx = txns.find((tx) => tx.inMessage?.value.eq(value) && tx.time * 1000 > now);
           if (hasTx) {
             found = true;
             break;
           }
-          await new Promise((resolve) => setTimeout(resolve, 6000));
+          await new Promise((resolve) => setTimeout(resolve, pullInterval));
         }
         if (found) {
           setTxnState("success");

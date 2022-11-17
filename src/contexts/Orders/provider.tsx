@@ -31,7 +31,7 @@ export function OrdersProvider({ children }: Props) {
   const addOrder = useCallback(
     (order: Escrow) => {
       setOrders((prev) => {
-        return prev.find((item) => isAddrEq(item.address, order.address)) ? prev : [...prev, order];
+        return prev.find((item) => isAddrEq(item.address, order.address)) ? prev : [order, ...prev];
       });
     },
     [setOrders]
