@@ -78,7 +78,6 @@ function App() {
       if (typeof e === "object" && Object.hasOwn(e!, "cause")) {
         // @ts-ignore
         if (e.cause === "serailization") {
-          console.log("Serailization error");
           openDark("Invalid form data. Check the addresses or order id you entered");
         }
       } else {
