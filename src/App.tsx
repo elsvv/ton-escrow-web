@@ -17,16 +17,18 @@ import { Wallet } from "./components/Wallet";
 import { toNano } from "ton";
 import { OrdersGrid } from "./components/OrdersGrid";
 import { ModalRef, Modals } from "./components/Modals/Modals";
-import { toUrlSafe, tonDeepLink } from "./utils";
+import { sleep, toUrlSafe } from "./utils";
 import { Fees } from "./config";
 import { useOrders } from "./hooks/useOrders";
+import { useSendTxn } from "./hooks/useSendTxn";
 
 function App() {
   const [loading, setLoading] = useState(false);
-  const { isConnected, address, connector } = useConnect();
+  const { isConnected, address } = useConnect();
   const modalRef = useRef<ModalRef>(null);
   const [snackbar, setSnackbar] = useState<React.ReactNode>(null);
-  const { addOrder } = useOrders();
+  const { addOrder, removeOrder } = useOrders();
+  const { sendTxn, isIssuedTxn, txnState } = useSendTxn();
 
   const { viewWidth } = useAdaptivity();
   const desktop = viewWidth > ViewWidth.SMALL_TABLET;
@@ -91,30 +93,38 @@ function App() {
   const onAccept = async (contract: Escrow) => {
     const value = toNano(Fees.gasFee);
     const body = Escrow.createAcceptBody();
-    const res = await connector.sendTransaction({
-      value: value.toString(10),
-      to: contract.address.toFriendly({ urlSafe: true }),
-      payload: toUrlSafe(body.toBoc({ idx: false }).toString("base64")),
-    });
 
-    if (connector.typeConnect === "tonkeeper") {
-      const anyLink = tonDeepLink(contract.address, value, body, contract.stateInit);
-      modalRef.current?.confirm({ tonkeeper: res, any: anyLink });
+    const ok = await sendTxn({
+      value,
+      body,
+      address: contract.address,
+      onDeeplink: (link) => {
+        modalRef.current?.confirm(link);
+      },
+    });
+    await sleep(1000);
+
+    if (ok) {
+      // update
     }
   };
 
   const onDecline = async (contract: Escrow) => {
     const value = toNano(Fees.gasFee);
     const body = Escrow.createRejectBody();
-    const res = await connector.sendTransaction({
-      value: value.toString(10),
-      to: contract.address.toFriendly({ urlSafe: true }),
-      payload: toUrlSafe(body.toBoc({ idx: false }).toString("base64")),
-    });
 
-    if (connector.typeConnect === "tonkeeper") {
-      const anyLink = tonDeepLink(contract.address, value, body, contract.stateInit);
-      modalRef.current?.confirm({ tonkeeper: res, any: anyLink });
+    const ok = await sendTxn({
+      value,
+      body,
+      address: contract.address,
+      onDeeplink: (link) => {
+        modalRef.current?.confirm(link);
+      },
+    });
+    await sleep(1000);
+
+    if (ok) {
+      removeOrder(contract);
     }
   };
 

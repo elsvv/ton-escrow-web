@@ -11,6 +11,7 @@ import {
   ViewWidth,
   PanelHeaderClose,
   ButtonGroup,
+  Spinner,
 } from "@vkontakte/vkui";
 import BN from "bn.js";
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
@@ -19,33 +20,29 @@ import { toNano } from "ton";
 
 import { Fees } from "../../config";
 import { Escrow } from "../../contracts/Escrow";
-import { useConnect } from "../../hooks/useConnect";
-import { toUrlSafe, tonDeepLink } from "../../utils";
+import { useOrders } from "../../hooks/useOrders";
+import { useSendTxn } from "../../hooks/useSendTxn";
+import { openLink, sleep } from "../../utils";
 
 export enum ModalTypes {
   deploy = "deploy",
   confirmTonkeeper = "confirmTonkeeper",
 }
 
-type Links = {
-  tonkeeper: string;
-  any: string;
-};
-
 export interface ModalRef {
   createEscrow: (contract: Escrow) => void;
-  confirm: (links: Links) => void;
+  confirm: (link: string) => void;
 }
 
 export const Modals = forwardRef<ModalRef>((_, modalRef) => {
   const [activeModal, _setActiveModal] = useState<ModalTypes | null>(null);
-
   const [modalHistory, setModalHistory] = useState<ModalTypes[]>([]);
   const { viewWidth } = useAdaptivity();
   const [fullPriceValue, setFullPriceValue] = useState("");
-  const [links, setLinks] = useState<Links | null>({ tonkeeper: "", any: "" });
+  const [link, setLink] = useState<string | null>(null);
   const contractRef = useRef<Escrow | null>(null);
-  const { connector } = useConnect();
+  const { sendTxn, isIssuedTxn, txnState } = useSendTxn();
+  const { addOrder } = useOrders();
 
   const isMobile = viewWidth <= ViewWidth.MOBILE;
 
@@ -75,16 +72,16 @@ export const Modals = forwardRef<ModalRef>((_, modalRef) => {
       setActiveModal(ModalTypes.deploy);
       contractRef.current = contract;
     },
-    confirm: (_links: Links) => {
+    confirm: (_link: string) => {
       setActiveModal(ModalTypes.confirmTonkeeper);
-      setLinks(_links);
+      setLink(_link);
     },
   }));
 
   useEffect(() => {
     if (activeModal === null) {
       contractRef.current = null;
-      setLinks(null);
+      setLink(null);
     }
   }, [activeModal]);
 
@@ -98,24 +95,19 @@ export const Modals = forwardRef<ModalRef>((_, modalRef) => {
     const value = fullPrice.add(toNano(Fees.gasFee));
     const body = Escrow.createDeployBody({ fullPrice, guarantorRoyalty });
 
-    const res = await connector.sendTransaction({
-      value: value.toString(10),
-      to: contract.address.toFriendly({ urlSafe: true }),
-      payload: toUrlSafe(body.toBoc({ idx: false }).toString("base64")),
-      stateInit: toUrlSafe(contract.stateInit.toBoc({ idx: false }).toString("base64")),
+    const ok = await sendTxn({
+      value,
+      body,
+      address: contract.address,
+      stateInit: contract.stateInit,
+      onDeeplink: setLink,
     });
-    if (connector.typeConnect === "tonkeeper") {
-      const anyLink = tonDeepLink(contract.address, value, body, contract.stateInit);
-      setLinks({ tonkeeper: res, any: anyLink });
-      setActiveModal(ModalTypes.confirmTonkeeper);
-    } else if (res === true) {
-      // Push orders
-      closeModal();
-    }
-  };
+    await sleep(1000);
 
-  const openLink = (link: string) => {
-    window.open(link, "_blank");
+    if (ok) {
+      closeModal();
+      addOrder(contract);
+    }
   };
 
   const displayRoyalty = (parseFloat(fullPriceValue) / 100) * Fees.royaltyPercent;
@@ -167,28 +159,25 @@ export const Modals = forwardRef<ModalRef>((_, modalRef) => {
           </ModalPageHeader>
         }
       >
-        {links && (
-          <Div className="center-children">
+        <Div className="center-children">
+          {link ? (
             <QRCode
-              value={links?.any ?? links?.tonkeeper}
+              value={link}
               size={360}
               quietZone={2}
               eyeRadius={10}
               logoImage={"/favicon.svg"}
               fgColor="#000000"
             />
-          </Div>
-        )}
+          ) : (
+            <Spinner />
+          )}
+        </Div>
         <Div>
           <ButtonGroup stretched mode="vertical">
-            {links?.tonkeeper && (
-              <Button onClick={() => openLink(links?.tonkeeper)} size="l" stretched>
+            {link && (
+              <Button onClick={() => openLink(link)} size="l" stretched>
                 Open via Tonkeeper
-              </Button>
-            )}
-            {links?.any && (
-              <Button mode="secondary" onClick={() => openLink(links?.any)} size="l" stretched>
-                Open with any TON wallet app
               </Button>
             )}
           </ButtonGroup>

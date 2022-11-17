@@ -16,7 +16,7 @@ import { fromNano } from "ton";
 import { Escrow } from "../contracts/Escrow";
 import { EscrowData } from "../contracts/types";
 import { useConnect } from "../hooks/useConnect";
-import { delay, showAddr } from "../utils";
+import { sleep, showAddr } from "../utils";
 
 type Props = {
   contract: Escrow;
@@ -42,7 +42,7 @@ export function OrderItem({ contract, onAccept, onDecline, removeOrder }: Props)
   useEffect(() => {
     async function fetch() {
       await getInfo();
-      await delay(1000);
+      await sleep(1000);
       const _balance = await contract.getBalance();
       setBalance(_balance);
     }
