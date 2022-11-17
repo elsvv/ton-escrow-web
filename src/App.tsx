@@ -17,7 +17,7 @@ import { Wallet } from "./components/Wallet";
 import { toNano } from "ton";
 import { OrdersGrid } from "./components/OrdersGrid";
 import { ModalRef, Modals } from "./components/Modals/Modals";
-import { toBase64url, tonDeepLink } from "./utils";
+import { toUrlSafe, tonDeepLink } from "./utils";
 import { Fees } from "./config";
 import { useOrders } from "./hooks/useOrders";
 
@@ -94,7 +94,7 @@ function App() {
     const res = await connector.sendTransaction({
       value: value.toString(10),
       to: contract.address.toFriendly({ urlSafe: true }),
-      payload: toBase64url(body.toBoc({ idx: false }).toString("base64")),
+      payload: toUrlSafe(body.toBoc({ idx: false }).toString("base64")),
     });
 
     if (connector.typeConnect === "tonkeeper") {
@@ -109,7 +109,7 @@ function App() {
     const res = await connector.sendTransaction({
       value: value.toString(10),
       to: contract.address.toFriendly({ urlSafe: true }),
-      payload: toBase64url(body.toBoc({ idx: false }).toString("base64")),
+      payload: toUrlSafe(body.toBoc({ idx: false }).toString("base64")),
     });
 
     if (connector.typeConnect === "tonkeeper") {
