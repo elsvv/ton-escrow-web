@@ -11,8 +11,6 @@ import {
   ViewWidth,
   PanelHeaderClose,
   ButtonGroup,
-  SimpleCell,
-  InfoRow,
 } from "@vkontakte/vkui";
 import BN from "bn.js";
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
@@ -52,7 +50,6 @@ export const Modals = forwardRef<ModalRef>((_, modalRef) => {
   const isMobile = viewWidth <= ViewWidth.MOBILE;
 
   const modalBack = () => {
-    console.log({ modalHistory });
     setActiveModal(modalHistory[modalHistory.length - 2]);
   };
 
@@ -98,16 +95,13 @@ export const Modals = forwardRef<ModalRef>((_, modalRef) => {
     const fullPrice = toNano(fullPriceValue);
     const guarantorRoyalty = fullPrice.mul(new BN(Fees.royaltyPercent)).div(new BN(100));
 
-    console.log("fullPrice", fullPrice.toString(10));
-    console.log("guarantorRoyalty", guarantorRoyalty.toString(10));
-
     const value = fullPrice.add(toNano(Fees.gasFee));
     const body = Escrow.createDeployBody({ fullPrice, guarantorRoyalty });
 
     const res = await connector.sendTransaction({
       value: value.toString(10),
       to: contract.address.toFriendly({ urlSafe: true }),
-      payload: toBase64url(body.toBoc({ idx: false }).toString("base64")),
+      payload: toBase64url(body.toBoc({ idx: false }).toString("base64url")),
       stateInit: toBase64url(contract.stateInit.toBoc({ idx: false }).toString("base64")),
     });
     if (connector.typeConnect === "tonkeeper") {
@@ -178,10 +172,10 @@ export const Modals = forwardRef<ModalRef>((_, modalRef) => {
             <QRCode
               value={links?.any ?? links?.tonkeeper}
               size={360}
-              quietZone={4}
-              eyeRadius={20}
-              removeQrCodeBehindLogo
-              fgColor="#333333"
+              quietZone={2}
+              eyeRadius={10}
+              logoImage={"/favicon.svg"}
+              fgColor="#000000"
             />
           </Div>
         )}
