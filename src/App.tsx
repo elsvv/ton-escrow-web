@@ -17,7 +17,7 @@ import { Wallet } from "./components/Wallet";
 import { toNano } from "ton";
 import { OrdersGrid } from "./components/OrdersGrid";
 import { ModalRef, Modals } from "./components/Modals/Modals";
-import { tonDeepLink } from "./utils";
+import { toBase64url, tonDeepLink } from "./utils";
 import { Fees } from "./config";
 import { useOrders } from "./hooks/useOrders";
 
@@ -94,8 +94,8 @@ function App() {
     const body = Escrow.createAcceptBody();
     const res = await connector.sendTransaction({
       value: value.toString(10),
-      to: contract.address.toFriendly(),
-      payload: body.toBoc({ idx: false }).toString("base64"),
+      to: contract.address.toFriendly({ urlSafe: true }),
+      payload: toBase64url(body.toBoc({ idx: false }).toString("base64")),
     });
 
     if (connector.typeConnect === "tonkeeper") {
@@ -109,8 +109,8 @@ function App() {
     const body = Escrow.createRejectBody();
     const res = await connector.sendTransaction({
       value: value.toString(10),
-      to: contract.address.toFriendly(),
-      payload: body.toBoc({ idx: false }).toString("base64"),
+      to: contract.address.toFriendly({ urlSafe: true }),
+      payload: toBase64url(body.toBoc({ idx: false }).toString("base64")),
     });
 
     if (connector.typeConnect === "tonkeeper") {

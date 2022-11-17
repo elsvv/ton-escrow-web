@@ -22,7 +22,7 @@ import { toNano } from "ton";
 import { Fees } from "../../config";
 import { Escrow } from "../../contracts/Escrow";
 import { useConnect } from "../../hooks/useConnect";
-import { tonDeepLink } from "../../utils";
+import { toBase64url, tonDeepLink } from "../../utils";
 
 export enum ModalTypes {
   deploy = "deploy",
@@ -106,9 +106,9 @@ export const Modals = forwardRef<ModalRef>((_, modalRef) => {
 
     const res = await connector.sendTransaction({
       value: value.toString(10),
-      to: contract.address.toFriendly(),
-      payload: body.toBoc({ idx: false }).toString("base64"),
-      stateInit: contract.stateInit.toBoc({ idx: false }).toString("base64"),
+      to: contract.address.toFriendly({ urlSafe: true }),
+      payload: toBase64url(body.toBoc({ idx: false }).toString("base64")),
+      stateInit: toBase64url(contract.stateInit.toBoc({ idx: false }).toString("base64")),
     });
     if (connector.typeConnect === "tonkeeper") {
       const anyLink = tonDeepLink(contract.address, value, body, contract.stateInit);

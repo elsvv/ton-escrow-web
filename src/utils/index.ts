@@ -7,7 +7,7 @@ export const delay = async (duration: number) => {
   return new Promise((resolve) => setTimeout(resolve, duration));
 };
 
-const toBase64url = (str: string) => str.replace(/\+/g, "-").replace(/\//g, "_");
+export const toBase64url = (str: string) => str.replace(/\+/g, "-").replace(/\//g, "_");
 
 export const tonDeepLink = (address: Address, amount: BN, body?: Cell, stateInit?: Cell) =>
   `ton://transfer/${address.toFriendly({
