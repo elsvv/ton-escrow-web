@@ -158,7 +158,7 @@ export const Modals = forwardRef<ModalRef>((_, modalRef) => {
         id={ModalTypes.confirmTonkeeper}
         onClose={modalBack}
         header={
-          <ModalPageHeader before={<PanelHeaderBack label="Назад" onClick={modalBack} />}>
+          <ModalPageHeader before={<PanelHeaderBack label="Back" onClick={modalBack} />}>
             Confirm
           </ModalPageHeader>
         }
