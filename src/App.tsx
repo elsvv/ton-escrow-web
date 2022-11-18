@@ -14,13 +14,12 @@ import { Form } from "./components/Form";
 import { InputsData } from "./contracts/types";
 import { Escrow } from "./contracts/Escrow";
 import { Wallet } from "./components/Wallet";
-import { toNano } from "ton";
+import { Cell, toNano } from "ton";
 import { OrdersGrid } from "./components/OrdersGrid";
 import { ModalRef, Modals } from "./components/Modals/Modals";
 import { Fees } from "./config";
 import { useOrders } from "./hooks/useOrders";
 import { useSendTxn } from "./hooks/useSendTxn";
-import { Client } from "./services";
 
 function App() {
   const [loading, setLoading] = useState(false);
@@ -29,12 +28,12 @@ function App() {
   const [snackbar, setSnackbar] = useState<React.ReactNode>(null);
   const { addOrder, removeOrder } = useOrders();
   const { sendTxn } = useSendTxn();
-
   const { viewWidth } = useAdaptivity();
+
   const desktop = viewWidth > ViewWidth.SMALL_TABLET;
   const mobile = viewWidth > ViewWidth.MOBILE;
 
-  const openDark = (text: string) => {
+  const openError = (text: string) => {
     if (snackbar) return;
     setSnackbar(
       <Snackbar
@@ -79,57 +78,42 @@ function App() {
       if (typeof e === "object" && Object.hasOwn(e!, "cause")) {
         // @ts-ignore
         if (e.cause === "serailization") {
-          openDark("Invalid form data. Check the addresses or order id you entered");
+          openError("Invalid form data. Check the addresses or order id you entered");
         }
       } else {
-        openDark("Unknown error...");
+        openError("Unknown error...");
       }
     } finally {
       setLoading(false);
     }
   }
 
-  const checkDestroyContact = async (contract: Escrow) => {
-    const res = await Client.isContractDeployed(contract.address);
-    if (!res) {
+  const guarantorAction = async (contract: Escrow, body: Cell) => {
+    const value = toNano(Fees.gasFee);
+    await sendTxn({
+      value,
+      body,
+      address: contract.address,
+      onDeeplink: (link) => {
+        modalRef.current?.confirm(link);
+      },
+      pullCount: 2,
+    });
+
+    const exists = await contract.isDeployed();
+    if (connector.typeConnect !== "tonkeeper" && !exists) {
       removeOrder(contract);
     }
   };
 
   const onAccept = async (contract: Escrow) => {
-    const value = toNano(Fees.gasFee);
     const body = Escrow.createAcceptBody();
-
-    await sendTxn({
-      value,
-      body,
-      address: contract.address,
-      onDeeplink: (link) => {
-        modalRef.current?.confirm(link);
-      },
-      pullCount: 2,
-    });
-    if (connector.typeConnect !== "tonkeeper") {
-      await checkDestroyContact(contract);
-    }
+    guarantorAction(contract, body);
   };
 
   const onDecline = async (contract: Escrow) => {
-    const value = toNano(Fees.gasFee);
     const body = Escrow.createRejectBody();
-
-    await sendTxn({
-      value,
-      body,
-      address: contract.address,
-      onDeeplink: (link) => {
-        modalRef.current?.confirm(link);
-      },
-      pullCount: 2,
-    });
-    if (connector.typeConnect !== "tonkeeper") {
-      await checkDestroyContact(contract);
-    }
+    guarantorAction(contract, body);
   };
 
   return (

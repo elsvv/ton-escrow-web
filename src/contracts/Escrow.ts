@@ -75,18 +75,19 @@ export class Escrow {
   }
 
   async getInfo() {
-    try {
-      const res = await Client.callGetMethod(this.address, "get_info");
-      this.deployed = true;
+    const res = await Client.callGetMethod(this.address, "get_info");
 
-      return parseInfoStack(res.stack);
-    } catch (e) {
-      this.deployed = false;
-    }
+    return parseInfoStack(res.stack);
   }
 
   async getBalance() {
     return Client.getBalance(this.address);
+  }
+
+  async isDeployed() {
+    const res = await Client.isContractDeployed(this.address);
+    this.deployed = res;
+    return res;
   }
 
   static createDeployBody(params: EscrowDeployBody) {
@@ -131,12 +132,7 @@ export class Escrow {
     }
 
     const contract = new Escrow(data);
-
-    await contract.getInfo();
-    // try {
-    // } catch (e) {
-    //   throw new Error("getInfo error", { cause: "getInfo" });
-    // }
+    await contract.isDeployed();
 
     return contract;
   }
