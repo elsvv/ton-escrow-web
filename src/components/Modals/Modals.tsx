@@ -23,7 +23,7 @@ import { Escrow } from "../../contracts/Escrow";
 import { useConnect } from "../../hooks/useConnect";
 import { useOrders } from "../../hooks/useOrders";
 import { useSendTxn } from "../../hooks/useSendTxn";
-import { openLink, sleep } from "../../utils";
+import { openLink } from "../../utils";
 
 export enum ModalTypes {
   deploy = "deploy",
