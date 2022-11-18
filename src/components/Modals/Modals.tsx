@@ -107,8 +107,6 @@ export const Modals = forwardRef<ModalRef>((_, modalRef) => {
         setLink(link);
       },
     });
-    await sleep(1000);
-
     if (ok) {
       closeModal();
       addOrder(contract);
