@@ -102,7 +102,10 @@ export const Modals = forwardRef<ModalRef>((_, modalRef) => {
       body,
       address: contract.address,
       stateInit: contract.stateInit,
-      onDeeplink: setLink,
+      onDeeplink: (link) => {
+        setActiveModal(ModalTypes.confirmTonkeeper);
+        setLink(link);
+      },
     });
     await sleep(1000);
 
