@@ -4,7 +4,6 @@
   "private": true,
   "dependencies": {
     "@delab-team/connect": "^1.2.0",
-    "@rollup/plugin-inject": "^5.0.2",
     "@types/node": "^16.18.3",
     "@types/react": "^18.0.25",
     "@types/react-dom": "^18.0.9",
