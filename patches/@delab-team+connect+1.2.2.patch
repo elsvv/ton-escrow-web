@@ -1,0 +1,66 @@
+diff --git a/node_modules/@delab-team/connect/dist/core/Modal.js b/node_modules/@delab-team/connect/dist/core/Modal.js
+index 10718bf..51c428c 100644
+--- a/node_modules/@delab-team/connect/dist/core/Modal.js
++++ b/node_modules/@delab-team/connect/dist/core/Modal.js
+@@ -1,6 +1,7 @@
+ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+ import { useEffect, useRef, useState } from 'react';
+ import { Icon20ComputerOutline, Icon20SmartphoneOutline, Icon24Dismiss, Icon28ChevronLeftOutline } from '@vkontakte/icons';
++import {useOnClickOutside} from './hooks/useOnClickOutside'
+ import QRCodeStyling from 'qr-code-styling';
+ import * as QRoptions from './qr.json';
+ import './static/modal.css';
+@@ -21,6 +22,10 @@ const DeLabModal = (props) => {
+     const [link, setLink] = useState('');
+     const [isOpenModal, setIsOpenModal] = useState(false);
+     const ref = useRef(null);
++    const modalRef = useRef(null);
++    useOnClickOutside(modalRef, () => {
++        props.DeLabConnectObject.closeModal()
++    }, isOpenModal)
+     function registerListen() {
+         props.DeLabConnectObject.on('modal', (data) => {
+             setIsOpenModal(data.data ?? false);
+@@ -52,7 +57,7 @@ const DeLabModal = (props) => {
+     useEffect(() => {
+         qrCode.append(ref.current ?? undefined);
+     }, [type]);
+-    return (_jsx("div", { className: 'delab-modal-root ' + (isOpenModal ? 'delab-modal-root-active' : ''), children: _jsxs("div", { className: 'delab-modal-block', children: [_jsxs("div", { className: "delab-modal-header", children: [_jsx("div", { className: 'delab-modal-header-left' + (type === 0 ? ' delab-disable' : ''), onClick: () => {
++    return (_jsx("div", { className: 'delab-modal-root ' + (isOpenModal ? 'delab-modal-root-active' : ''), children: _jsxs("div", { className: 'delab-modal-block', ref: modalRef, children: [_jsxs("div", { className: "delab-modal-header", children: [_jsx("div", { className: 'delab-modal-header-left' + (type === 0 ? ' delab-disable' : ''), onClick: () => {
+                                 setType(0);
+                                 setLink('');
+                             }, children: _jsx(Icon28ChevronLeftOutline, { width: 24, height: 24 }) }), _jsxs("div", { className: "delab-modal-header-center", children: [_jsx("img", { src: props.scheme === 'dark' ? white : black, className: "delab-logo delab-logo2" }), _jsx("span", { children: "DeLab Connect" })] }), _jsx("div", { className: "delab-modal-header-right", onClick: () => props.DeLabConnectObject.closeModal(), children: _jsx(Icon24Dismiss, {}) })] }), type === 0
+diff --git a/node_modules/@delab-team/connect/dist/core/hooks/useOnClickOutside.js b/node_modules/@delab-team/connect/dist/core/hooks/useOnClickOutside.js
+new file mode 100644
+index 0000000..8cf80d0
+--- /dev/null
++++ b/node_modules/@delab-team/connect/dist/core/hooks/useOnClickOutside.js
+@@ -0,0 +1,27 @@
++// based on https://usehooks.com/useOnClickOutside/
++import { useEffect } from 'react';
++
++export function useOnClickOutside(ref, handler, shouldListen) {
++  useEffect(
++    () => {
++      if (!shouldListen) {
++        return
++      }
++
++      const listener = (event) => {
++        // Do nothing if clicking ref's element or descendent elements
++        if (!ref.current || !document || ref.current.contains(event.target)) {
++          return;
++        }
++        handler();
++      };
++      document.addEventListener("mousedown", listener);
++      document.addEventListener("touchstart", listener);
++      return () => {
++        document.removeEventListener("mousedown", listener);
++        document.removeEventListener("touchstart", listener);
++      };
++    },
++    [ref, handler, shouldListen]
++  );
++}
+\ No newline at end of file

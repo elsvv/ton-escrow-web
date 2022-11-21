@@ -16,12 +16,12 @@ root.render(
     <ConnectProvider>
       <OrdersProvider>
         <ConfigProvider platform="android" locale="en" scheme="vkcom_dark">
-          <AdaptivityProvider>
-            <AppRoot>
+          <AppRoot>
+            <AdaptivityProvider>
               <App />
-            </AppRoot>
-            <DeLabModal DeLabConnectObject={Connector} scheme={"dark"} />
-          </AdaptivityProvider>
+              <DeLabModal DeLabConnectObject={Connector} scheme={"dark"} />
+            </AdaptivityProvider>
+          </AppRoot>
         </ConfigProvider>
       </OrdersProvider>
     </ConnectProvider>

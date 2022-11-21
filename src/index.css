@@ -24,3 +24,15 @@
 .col {
   flex-direction: column;
 }
+
+#root .delab-modal-root {
+  visibility: hidden;
+}
+
+#root .delab-modal-root-active {
+  visibility: visible;
+}
+
+.delab-modal-header-right {
+  transition: background-color 0.2s;
+}
